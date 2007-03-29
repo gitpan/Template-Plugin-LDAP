@@ -1,5 +1,8 @@
 Revision history for Perl extension Template::Plugin::LDAP.
 
+0.04  Thu Mar 29 2007
+     - More basic tests, README (pod2readme) and docs
+
 0.03  Thu Mar 29 2007
      - Changed ownership/maintainer to Gavin Henry - <ghenry@suretecsystems.com>
 

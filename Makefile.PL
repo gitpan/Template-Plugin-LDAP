@@ -2,7 +2,7 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME      => 'Template::Plugin::LDAP',
-    VERSION   => '0.3',
+    VERSION   => '0.4',
     PREREQ_PM => {
         'Net::LDAP'  => 0,
         'Template'   => 0,

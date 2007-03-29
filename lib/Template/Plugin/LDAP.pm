@@ -270,14 +270,29 @@ to do updates later, that functionality might be added.
 
 =head1 METHODS
 
-I will fill this in when I am less tired.
+=head2 new
+
+=head2 connect
+
+=head2 search
+
+=head2 get_first
+
+=head2 get_next 
+
+=head2 get 
+
+=head2 get_all 
+
+=head2 dn 
 
 =head1 AUTHOR
 
 Dominic Mitchell E<lt>dom@happygiraffe.netE<gt>
 
 =head1 MAINTAINER
-Suretec Systems Ltd, Gavin Henry C<< <ghenry@suretecsystems.com> >>
+
+Suretec Systems Ltd., Gavin Henry E<lt>ghenry@suretecsystems.com<gt>
 
 =head1 SEE ALSO
 
