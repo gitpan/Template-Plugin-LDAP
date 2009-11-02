@@ -1,5 +1,5 @@
 # Copyright (c) 2001 Dominic Mitchell.
-# Portions Copyright (c) 2007 Gavin Henry - <ghenry@suretecsystems>, 
+# Portions Copyright (c) 2007-2009 Gavin Henry - <ghenry@suretecsystems.com>, 
 # Suretec Systems Ltd.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@ use strict;
 use vars qw( $VERSION );
 use base qw( Template::Plugin );
 
+use Template::Exception;
 use Net::LDAP;
 
 $VERSION = ( qw( $Revision: 1318 $ ) )[1];
@@ -66,7 +67,7 @@ sub connect {
 
     $host = shift
       || $params->{ host }
-      || return $self->_throw( "no ldap host specified" );
+      || $self->throw( "no ldap host specified" );
     $port = ( $host =~ m/:(\d+)$/ )[0]
       || $params->{ port }
       || getservbyname( "ldap", "tcp" )
@@ -75,7 +76,7 @@ sub connect {
     $pass = shift || $params->{ pass };
 
     my $ldap = Net::LDAP->new( $host, port => $port )
-      or return $self->_throw( "ldap connect: $@" );
+      or return $self->throw( "ldap connect: $@" );
     if ( $user || $pass ) {
         $ldap->bind( $user, password => $pass );
     }
@@ -93,10 +94,14 @@ sub search {
     my $params = ref $_[-1] eq 'HASH' ? pop( @_ ) : { @_ };
 
     my $mesg = $self->_ldap->search( %$params );
-    return $self->_throw( $mesg->error )
+    $self->throw( $mesg->error )
       if $mesg->code;
 
     return Template::Plugin::LDAP::Iterator->new( $mesg );
+}
+
+sub throw {
+	die Template::Exception->new( 'ldap', join('', @_) );
 }
 
 package Template::Plugin::LDAP::Iterator;
@@ -199,11 +204,20 @@ sub _fetchentry {
 
 package Template::Plugin::LDAP::Entry;
 
-use vars qw( $AUTOLOAD );
-
 sub new {
     my ( $class, $entry ) = @_;
     my $self = { _entry => $entry };
+    foreach my $attrib ( $entry->attributes(nooptions => 1)) {
+	no strict 'refs';
+	next if defined &{"$class\::\L$attrib"};
+	*{"$class\::\L$attrib"} = sub {
+		if ( $_[0]->{ _entry }->exists( $attrib ) ) {
+                	return $_[0]->{ _entry }->get_value( $attrib );
+		} else {
+			return "";
+		}
+	}
+    }
     bless $self, $class;
     return $self;
 }
@@ -211,18 +225,6 @@ sub new {
 sub dn {
     my $self = shift;
     return $self->{ _entry }->dn;
-}
-
-sub AUTOLOAD {
-    my $self = shift;
-    ( my $var = $AUTOLOAD ) =~ s/.*:://;
-    my $val;
-    if ( $self->{ _entry }->exists( $var ) ) {
-        return $self->{ _entry }->get_value( $var );
-    }
-    else {
-        return "";
-    }
 }
 
 1;
